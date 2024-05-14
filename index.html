@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<title>نوت پد آنلاین</title>
+<style>
+  body, html {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+  .notepad {
+    width: 100%;
+    height: 100%;
+  }
+</style>
+</head>
+<body>
+
+<textarea id="notepad" class="notepad" placeholder="شروع به تایپ کنید..."></textarea>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/parse/2.10.0/parse.min.js"></script>
+<script>
+// مقداردهی اولیه Parse با استفاده از App ID و JavaScript Key
+Parse.initialize("4ZQKeZMaAL60CY63kgU8oO5S3emrVGNOuOvomBuC", "LVQBKZcp9TD5Z9kN1XTOPAZB5eNPZMEbgUJGp9RY");
+Parse.serverURL = 'https://parseapi.back4app.com/';
+
+// تابع برای ذخیره متن به صورت خودکار
+function autoSave() {
+  var Notepad = Parse.Object.extend("Notepad");
+  var query = new Parse.Query(Notepad);
+
+  query.first({
+    success: function(notepad) {
+      // اگر یک رکورد وجود دارد، متن جدید را ذخیره می‌کنیم
+      if (notepad) {
+        var text = document.getElementById('notepad').value;
+        notepad.set('content', text);
+        notepad.save();
+      } else {
+        // اگر رکوردی وجود ندارد، یکی جدید ایجاد می‌کنیم
+        var newNotepad = new Notepad();
+        var text = document.getElementById('notepad').value;
+        newNotepad.set('content', text);
+        newNotepad.save();
+      }
+    },
+    error: function(error) {
+      console.log("Error: " + error.code + " " + error.message);
+    }
+  });
+}
+
+// تابع برای بارگذاری متن ذخیره شده
+function loadSavedContent() {
+  var Notepad = Parse.Object.extend("Notepad");
+  var query = new Parse.Query(Notepad);
+  query.first({
+    success: function(notepad) {
+      // متن ذخیره شده را در textarea قرار می‌دهیم
+      if (notepad) {
+        var text = notepad.get('content');
+        document.getElementById('notepad').value = text;
+      }
+    },
+    error: function(error) {
+      console.log("Error: " + error.code + " " + error.message);
+    }
+  });
+}
+
+// فراخوانی تابع بارگذاری متن ذخیره شده هنگام بارگذاری صفحه
+window.onload = function() {
+  loadSavedContent();
+};
+
+// اضافه کردن event listener برای ذخیره خودکار هنگام تغییر متن
+var notepad = document.getElementById('notepad');
+notepad.addEventListener('input', function() {
+  autoSave();
+});
+</script>
+
+</body>
+</html>
